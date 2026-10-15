@@ -110,8 +110,18 @@ public:
       std::cerr << *this << " - " << v << std::endl;
       assert(false); // negative values not allowed
       return v;
-    } else {
+    } else if (v.scaler == NULL_SCALER) {
       return *this;
+    } else {
+      // v is in a smaller bucket: bring it into this bucket and subtract it,
+      // instead of ignoring it (see operator+).
+      double s = v.value;
+      for (int d = v.scaler - scaler; d > 0 && s != 0.0; --d) {
+        s *= JS_SCALE_THRESHOLD;
+      }
+      auto res = ScaledValue(value - s, scaler);
+      res.scale();
+      return res;
     }
   }
 
